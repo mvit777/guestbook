@@ -1,3 +1,5 @@
+name: app
+type: 'php:8.1'
 relationships:
     database: "database:postgresql"
 runtime:
