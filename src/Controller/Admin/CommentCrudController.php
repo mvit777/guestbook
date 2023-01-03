@@ -42,10 +42,8 @@ class CommentCrudController extends AbstractCrudController
         yield AssociationField::new('conference');
         yield TextField::new('author');
         yield EmailField::new('email');
-        yield TextareaField::new('text')->hideOnIndex()
-        ;
-        yield TextField::new('photoFilename')->onlyOnIndex()
-        ;
+        yield TextareaField::new('text')->hideOnIndex();
+        yield TextField::new('photoFilename')->onlyOnIndex();
 
         $createdAt = DateTimeField::new('createdAt')->setFormTypeOptions([
             'html5' => true,
