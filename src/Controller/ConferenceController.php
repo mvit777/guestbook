@@ -2,6 +2,8 @@
 
 namespace App\Controller;
 
+use App\Entity\Conference;
+App\Repository\CommentRepository;
 use App\Repository\ConferenceRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
