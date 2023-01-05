@@ -1,5 +1,8 @@
 name: guestbook
 type: 'php:8.1'
+mounts:
+    "/var": { source: local, source_path: var }
+    "/public/uploads": { source: local, source_path: uploads }
 relationships:
     database: "database:postgresql"
 runtime:
