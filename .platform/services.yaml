@@ -2,6 +2,3 @@
 database:
     type: postgresql:14
     disk: 1024
-files:
-    type: network-storage:2.0
-    disk: 256
