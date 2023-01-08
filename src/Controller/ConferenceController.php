@@ -15,14 +15,17 @@ use Symfony\Component\HttpFoundation\Request;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
+use App\SpamChecker;
 
 class ConferenceController extends AbstractController
 {
     private EntityManagerInterface $entityManager;
+    private SpamChecker $spamChecker;
 
-    public function __construct(EntityManagerInterface $em)
+    public function __construct(EntityManagerInterface $em, SpamChecker $sc)
     {
         $this->entityManager = $em;
+        $this->spamChecker = $sc;
     }
     #[Route('/', name: 'homepage')]
     public function index(ConferenceRepository $conferenceRepository): Response
@@ -50,6 +53,15 @@ class ConferenceController extends AbstractController
                 $comment->setPhotoFilename($filename);
             }
             $this->entityManager->persist($comment);
+            $context = [
+                                'user_ip' => $request->getClientIp(),
+                                'user_agent' => $request->headers->get('user-agent'),
+                                'referrer' => $request->headers->get('referer'),
+                                'permalink' => $request->getUri(),
+                            ];
+                            if (2 === $spamChecker->getSpamScore($comment, $context)) {
+                                throw new \RuntimeException('Blatant spam, go away!');
+                            }
             $this->entityManager->flush();
 
             return $this->redirectToRoute('conference', ['slug' => $conference->getSlug()]);
@@ -60,7 +72,7 @@ class ConferenceController extends AbstractController
             'conference'=> $conference,
             'comments' => $paginator,
             'previous' => $offset - CommentRepository::PAGINATOR_PER_PAGE,
-            'next' => min(count($paginator), $offset + CommentRepository::PAGINATOR_PER_PAGE),
+            'next' => min(count($paginator), $offset  CommentRepository::PAGINATOR_PER_PAGE),
             'comment_form' => $form,
         ]);
     }
