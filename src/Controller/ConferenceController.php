@@ -59,7 +59,7 @@ class ConferenceController extends AbstractController
                                 'referrer' => $request->headers->get('referer'),
                                 'permalink' => $request->getUri(),
                             ];
-                            if (2 === $spamChecker->getSpamScore($comment, $context)) {
+                            if (2 === $this->spamChecker->getSpamScore($comment, $context)) {
                                 throw new \RuntimeException('Blatant spam, go away!');
                             }
             $this->entityManager->flush();
@@ -72,7 +72,7 @@ class ConferenceController extends AbstractController
             'conference'=> $conference,
             'comments' => $paginator,
             'previous' => $offset - CommentRepository::PAGINATOR_PER_PAGE,
-            'next' => min(count($paginator), $offset  CommentRepository::PAGINATOR_PER_PAGE),
+            'next' => min(count($paginator), $offset + CommentRepository::PAGINATOR_PER_PAGE),
             'comment_form' => $form,
         ]);
     }
