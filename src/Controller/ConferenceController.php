@@ -15,17 +15,19 @@ use Symfony\Component\HttpFoundation\Request;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
-use App\SpamChecker;
+//use App\SpamChecker;
+use App\Message\CommentMessage;
+use Symfony\Component\Messenger\MessageBusInterface;
 
 class ConferenceController extends AbstractController
 {
     private EntityManagerInterface $entityManager;
-    private SpamChecker $spamChecker;
+    private MessageBusInterface $bus;
 
-    public function __construct(EntityManagerInterface $em, SpamChecker $sc)
+    public function __construct(EntityManagerInterface $em, MessageBusInterface $bus)
     {
         $this->entityManager = $em;
-        $this->spamChecker = $sc;
+        $this->bus = $bus;
     }
     #[Route('/', name: 'homepage')]
     public function index(ConferenceRepository $conferenceRepository): Response
@@ -53,16 +55,16 @@ class ConferenceController extends AbstractController
                 $comment->setPhotoFilename($filename);
             }
             $this->entityManager->persist($comment);
+            $this->entityManager->flush();
             $context = [
                                 'user_ip' => $request->getClientIp(),
                                 'user_agent' => $request->headers->get('user-agent'),
                                 'referrer' => $request->headers->get('referer'),
                                 'permalink' => $request->getUri(),
                             ];
-                            if (2 === $this->spamChecker->getSpamScore($comment, $context)) {
-                                throw new \RuntimeException('Blatant spam, go away!');
-                            }
-            $this->entityManager->flush();
+                            $this->bus->dispatch(new CommentMessage($comment->getId(), $context));
+            
+            
 
             return $this->redirectToRoute('conference', ['slug' => $conference->getSlug()]);
         }
